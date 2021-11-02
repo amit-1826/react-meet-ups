@@ -1,30 +1,45 @@
 import MeetupList from "../components/meet-ups/MeetupList";
-
-const DUMMY_DATA = [
-    {
-        id: 'm1',
-        title: 'This is a first meetup',
-        image:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/2560px-Stadtbild_M%C3%BCnchen.jpg',
-        address: 'Meetupstreet 5, 12345 Meetup City',
-        description:
-            'This is a first, amazing meetup which you definitely should not miss. It will be a lot of fun!',
-    },
-    {
-        id: 'm2',
-        title: 'This is a second meetup',
-        image:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Stadtbild_M%C3%BCnchen.jpg/2560px-Stadtbild_M%C3%BCnchen.jpg',
-        address: 'Meetupstreet 5, 12345 Meetup City',
-        description:
-            'This is a first, amazing meetup which you definitely should not miss. It will be a lot of fun!',
-    },
-];
+import {useEffect, useState} from "react";
 
 function AllMeetupsPage() {
+
+    const [isLoading, setLoading] = useState(true);
+    const [meetupsData, setMeetupsData] = useState([]);
+
+    // without useEffect will create infinite loop
+    useEffect(() => {
+        setLoading(true);
+        fetch('https://react-meetups-f4eb7-default-rtdb.firebaseio.com/meetups.json')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                const meetups = [];
+                for (const dataKey in data) {
+                    const meetup = {
+                        id: dataKey,
+                        ...data[dataKey]
+                    }
+                    meetups.push(meetup);
+                }
+                setLoading(false);
+                setMeetupsData(meetups);
+            })
+            .catch((error) => {
+                setLoading(false);
+            })
+    }, []);  // blank array is the set of external dependencies
+
+
+    if (isLoading) {
+        return <section>
+            Loading...
+        </section>
+    }
+
     return <section>
         <h2>All Meetups</h2>
-        <MeetupList meetups={DUMMY_DATA}/>
+        <MeetupList meetups={meetupsData}/>
     </section>
 }
 
